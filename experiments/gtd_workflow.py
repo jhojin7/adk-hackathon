@@ -9,7 +9,7 @@ from typing import List, Dict, Any
 from datetime import datetime, timedelta
 
 from google.adk.agents import LlmAgent, SequentialAgent, ParallelAgent, LoopAgent
-from google.adk.runners import Runner
+from google.adk.runners import Runner, InMemoryRunner
 from google.genai import types
 
 
@@ -182,14 +182,19 @@ async def main():
     print("🚀 Starting GTD Multi-Agent Workflow System")
     print("=" * 50)
 
-    # Initialize the runner
-    runner = Runner()
+    # Initialize the runner with required parameters
+    runner = InMemoryRunner(agent=gtd_coordinator, app_name="GTD_Workflow")
+
+    # Create a session for the conversation
+    session = await runner.session_service.create_session(
+        app_name="GTD_Workflow", user_id="test_user"
+    )
 
     # Example GTD workflow execution
     test_queries = [
-        "I need to call the dentist to schedule a cleaning appointment",
+        # "I need to call the dentist to schedule a cleaning appointment",
         "Research vacation destinations for summer trip",
-        "Buy groceries for the week",
+        # "Buy groceries for the week",
         "Review quarterly budget numbers",
     ]
 
@@ -198,25 +203,22 @@ async def main():
         print("-" * 30)
 
         try:
+            # Create user content
+            content = types.Content(role="user", parts=[types.Part(text=query)])
+
             # Run the GTD coordinator with the query
             async for event in runner.run_async(
-                agent=gtd_coordinator, user_input=query
+                user_id=session.user_id, session_id=session.id, new_message=content
             ):
-                if hasattr(event, "content") and event.content:
-                    if hasattr(event.content, "parts") and event.content.parts:
-                        for part in event.content.parts:
-                            if hasattr(part, "text") and part.text:
-                                print(f"🤖 {event.author}: {part.text}")
+                if event.content and event.content.parts:
+                    for part in event.content.parts:
+                        if part.text:
+                            print(f"🤖 {event.author}: {part.text}")
 
         except Exception as e:
             print(f"❌ Error processing '{query}': {e}")
 
     print("\n✅ GTD Workflow Demo Complete!")
-    print("\nThis demonstrates:")
-    print("• Sequential processing (Capture → Clarify → Organize)")
-    print("• Parallel processing (Multiple contexts)")
-    print("• Loop processing (Regular reviews)")
-    print("• Multi-agent coordination for GTD methodology")
 
 
 if __name__ == "__main__":
