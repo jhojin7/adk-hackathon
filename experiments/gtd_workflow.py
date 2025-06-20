@@ -20,23 +20,14 @@ def capture_task(task_description: str, context: str = "") -> str:
     return f"Task captured: '{task_description}' (Context: {context}) at {timestamp}"
 
 
-def clarify_task(task: str) -> Dict[str, Any]:
+def clarify_task(task: str) -> str:
     """Clarify what the task actually means and if it's actionable."""
-    return {
-        "task": task,
-        "is_actionable": True,  # Simplified - in real GTD this would be determined
-        "next_action": f"Process: {task}",
-        "project": None,
-        "context": "@computer",
-    }
+    return f"Task clarified: '{task}' is actionable. Next action: Process {task}. Context: @computer"
 
 
-def organize_task(task_data: Dict[str, Any]) -> str:
+def organize_task(task: str) -> str:
     """Organize the task into appropriate lists/contexts."""
-    if task_data["is_actionable"]:
-        return f"Task organized into {task_data['context']} context: {task_data['next_action']}"
-    else:
-        return f"Task moved to someday/maybe: {task_data['task']}"
+    return f"Task organized into @computer context: {task}"
 
 
 def review_tasks() -> str:
